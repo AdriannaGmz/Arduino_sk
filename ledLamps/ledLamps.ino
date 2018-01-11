@@ -3,18 +3,21 @@
 */
 
 // number of pins
-lamp1 = 40
-lamp2 = 50
+int lamp1 = 40;
+int lamp2 = 50;
 
 void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(lamp1, OUTPUT);
   pinMode(lamp2, OUTPUT);
 }
 
 void loop() {
+  digitalWrite(LED_BUILTIN, HIGH);
   digitalWrite(lamp1, HIGH);   
   digitalWrite(lamp2, LOW);   
-  delay(1000);                       
+  delay(1000);                    
+  digitalWrite(LED_BUILTIN, LOW);   
   digitalWrite(lamp1, LOW);    
   digitalWrite(lamp2, HIGH);    
   delay(1000);                       
