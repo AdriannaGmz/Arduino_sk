@@ -1,7 +1,9 @@
-# Arduino Sketches
+# PDP files
 
-This is the repository for the Arduino sketches, to try on Aalto Explorer(R) submarine Remote Operated Vehicle (ROV). 
-Arduino is to be controlled from a ROS node executed in the Raspberry Pi through the Arduino IDE. Files in this repository will be only for test purposes
+This is the repository for the programs to try on Aalto Explorer(R) submarine Remote Operated Vehicle (ROV).
+
+## Arduino Sketches
+Arduino is to be controlled from a ROS node executed in the Raspberry Pi through the Arduino IDE.
 
 ## Chronicle
 https://adriannagmz.gitbooks.io/aalto-explorer-adventure/content/
