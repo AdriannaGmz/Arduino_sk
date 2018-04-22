@@ -1,5 +1,5 @@
 
-// Serial TX-RX commands for lamps and sonar. MOTORS to be added
+//// Serial TX-RX commands for lamps and sonar. MOTORS to be added
 //                    ASCII
 //lamp1 on             l1n,     
 //lamp2 on             l2n,     
@@ -34,15 +34,31 @@ MS5837 sensor;
 
 
 //Motors
-#include "Encoder.h"
 boolean motorsJob = false;
 int      mtrAct;
-//Encoders
+int      MotorA_orange = 8;         //pwm pins, check if available
+int      MotorA_yellow = 9;         //two channels per motor to have front and backmovement on each drive
+int      MotorB_orange = 10;
+int      MotorB_yellow = 11;
+// http://savagemakers.com/differential-drive-tank-drive-in-arduino/
+//#define DDRIVE_MIN -100 //The minimum value x or y can be.
+//#define DDRIVE_MAX 100  //The maximum value x or y can be.
+//#define MOTOR_MIN_PWM -255 //The minimum value the motor output can be. WE USE MAX VELOCITIES
+#define MOTOR_MAX_PWM 255 //The maximum value the motor output can be.
+#define MOTOR_MED_PWM 127 //The maximum value the motor output can be.
+#define MOTOR_MIN_PWM 0
+int LeftMotorOutput_o; //will hold the calculated output for the left motor, channel orange
+int LeftMotorOutput_y; //left motor, channel yellow
+int RightMotorOutput_o; //will hold the calculated output for the right motor, channel orange
+int RightMotorOutput_y; //right motor, channel yellow
+int pwm_move;
+// ----------- Encoders. Get velocity
+//#include "Encoder.h"
 #define RH_ENCODER_A 2     // pins for the encoder inputs   
 #define RH_ENCODER_B 3     //2, 3, 18, 19, 20, 21 interrupt pins for mega
 #define LH_ENCODER_A 18
 #define LH_ENCODER_B 19
-// variables to store the number of encoder pulses for each motor
+// variables to store the number of encoder pulses for each motor. 
 volatile unsigned long leftCount = 0;
 volatile unsigned long rightCount = 0;
 //velocities
@@ -52,7 +68,6 @@ long oldposition_R = 0;
 unsigned long newtime_R;
 unsigned long oldtime_R = 0;
 long vel_R;
-
 volatile long encoderPos_L=0;
 long newposition_L;
 long oldposition_L = 0;
@@ -79,15 +94,19 @@ void setup(){
   }  
   sensor.setModel(MS5837::MS5837_30BA);
   sensor.setFluidDensity(997); // kg/m^3 (freshwater, 1029 for seawater)    
-  // -------- pressureSensor -end
+  // -------- 
    
    
-   // -------- Motors,ENcoders 
-//  pinMode(LH_ENCODER_A, INPUT);
+   // -------- Motors,PWM
+  pinMode(MotorA_orange, OUTPUT);
+  pinMode(MotorA_yellow, OUTPUT);
+  pinMode(MotorB_orange, OUTPUT);
+  pinMode(MotorB_yellow, OUTPUT);
+// -------- Encoders 
+//  pinMode(LH_ENCODER_A, INPUT);     //tested.. now moving to other cfg
 //  pinMode(LH_ENCODER_B, INPUT);
 //  pinMode(RH_ENCODER_A, INPUT);
 //  pinMode(RH_ENCODER_B, INPUT);
-  // initialize hardware interrupts
 //  attachInterrupt(0, leftEncoderEvent, CHANGE);
 //  attachInterrupt(1, rightEncoderEvent, CHANGE);
 //According to https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
@@ -103,8 +122,6 @@ void setup(){
 
   Serial.begin(115200);   
 }
-
-
 
 
 void read_fromPC(){                     //   CONTROL. Here we just read and decypher commands
@@ -211,36 +228,80 @@ void lamps_job(){
 
 
 
-void motors_job(){
+void motors_job(){  //differential drive pwm for movements: front, back, right, left, stop
   Serial.print("MtrCommand = ");
   Serial.println(mtrAct);
-  
+  pwm_move = MOTOR_MED_PWM;  //or MOTOR_MAX_PWM;
   switch (mtrAct) {
     case 'f':           //front
-    //
+      LeftMotorOutput_o = pwm_move;
+      LeftMotorOutput_y = MOTOR_MIN_PWM;
+      RightMotorOutput_o= pwm_move;
+      RightMotorOutput_y= MOTOR_MIN_PWM;
       break;
     case 'b':          //back
+      LeftMotorOutput_o = MOTOR_MIN_PWM;
+      LeftMotorOutput_y = pwm_move;
+      RightMotorOutput_o= MOTOR_MIN_PWM;
+      RightMotorOutput_y= pwm_move;
       break;
     case 'l':           //left
+      LeftMotorOutput_o = MOTOR_MIN_PWM;
+      LeftMotorOutput_y = pwm_move;
+      RightMotorOutput_o= pwm_move;
+      RightMotorOutput_y= MOTOR_MIN_PWM;
       break;
     case 'r':        //right
+      LeftMotorOutput_o = pwm_move;
+      LeftMotorOutput_y = MOTOR_MIN_PWM;
+      RightMotorOutput_o= MOTOR_MIN_PWM;
+      RightMotorOutput_y= pwm_move;
       break;
     case 's':        //stop
+      LeftMotorOutput_o = MOTOR_MIN_PWM;
+      LeftMotorOutput_y = MOTOR_MIN_PWM;
+      RightMotorOutput_o= MOTOR_MIN_PWM;
+      RightMotorOutput_y= MOTOR_MIN_PWM;
       break;
     default:
-      break;      //case sstop, put the same
-
+      LeftMotorOutput_o = MOTOR_MIN_PWM;
+      LeftMotorOutput_y = MOTOR_MIN_PWM;
+      RightMotorOutput_o= MOTOR_MIN_PWM;
+      RightMotorOutput_y= MOTOR_MIN_PWM;
+      break;
+    analogWrite(MotorA_orange, LeftMotorOutput_o);
+    analogWrite(MotorA_yellow, LeftMotorOutput_y);
+    analogWrite(MotorB_orange, RightMotorOutput_o);
+    analogWrite(MotorB_yellow, LeftMotorOutput_y);
   }
   
+
   
   motorsJob = false;
 }
 
+void encoderVelocities(){
+    //reading velocities... to test!   https://forum.arduino.cc/index.php?topic=158385.0
+  newposition_R = rightCount;
+  newposition_L = leftCount;
+  newtime_L = millis(); //but should be the same than R... todo: merge in one newtime
+    newtime_R = millis();
+  vel_R = (newposition_R-oldposition_R) * 1000 /(newtime_R-oldtime_R);
+  vel_L = (newposition_L-oldposition_L) * 1000 /(newtime_L-oldtime_L);
+  Serial.print ("speed_R = ");
+  Serial.println (vel_R);
+  Serial.print ("speed_L = ");
+  Serial.println (vel_L);
+  oldposition_R = newposition_R;
+    oldposition_L = newposition_L;
+  oldtime_R = newtime_R;
+    oldtime_L = newtime_L;
+//  delay(250);
+  }
 
 
 
-
-// encoder event for the interrupt call
+// encoder event for the interrupt calls. Counts
 void leftEncoderEvent() {
   if (digitalRead(LH_ENCODER_A) == HIGH) {
     if (digitalRead(LH_ENCODER_B) == LOW) {
@@ -257,7 +318,6 @@ void leftEncoderEvent() {
   }
 }
 
-// encoder event for the interrupt call
 void rightEncoderEvent() {
   if (digitalRead(RH_ENCODER_A) == HIGH) {
     if (digitalRead(RH_ENCODER_B) == LOW) {
@@ -284,10 +344,11 @@ void loop() {
   read_fromPC();
   read_sonar();
   read_pressure();
+///  read_char();   //only for testing
   
   // Reading data, i.e. control from outside
   if(lampsJob==true){lamps_job();}
-  if(motorsJob==true){motors_job();}  
+  if(motorsJob==true){motors_job();encoderVelocities();}  
 
   Serial.println("This is getting better.. ");
   delay(500);
