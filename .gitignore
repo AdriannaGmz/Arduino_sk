@@ -39,3 +39,6 @@ Thumbs.db
 #DAGR. For arduino temporary files
 ########################
 *.tmp
+#for raspberry images
+/raspImgs
+./raspImgs/*
