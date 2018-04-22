@@ -1,0 +1,81 @@
+LAME
+download tar, uncompress tar -vzvf, move to ~, go inside
+tar xfz lame-3.91.tar.gz
+cd lame-3.91
+./configure --with-fileio=lame --without-vorbis --disable-gtktest --enable-expopt=full --prefix=/usr
+make
+make install
+
+
+DARKICE.
+download tar, uncompress tar -vzvf, move to ~, go inside
+./configure
+make
+sudo make install
+
+
+
+devices that reproduce and record:
+ $aplay -l
+
+**** List of PLAYBACK Hardware Devices ****
+card 0: Intel [HDA Intel], device 0: ALC262 Analog [ALC262 Analog]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+The device for this is plughw:0,0. The two zeros come from card 0 and device 0
+
+$ arecord -l
+**** List of CAPTURE Hardware Devices ****
+card 1: PCH [HDA Intel PCH], device 0: ALC668 Analog [ALC668 Analog]
+  Subdevices: 0/1
+  Subdevice #0: subdevice #0
+play from card #1 and device 0 (hw=.), enter: adevice=hw=1.0
+
+
+************
+adrianna@asusUbuntu:~/Desktop$ lspci -v | grep Audio
+00:03.0 Audio device: Intel Corporation Haswell-ULT HD Audio Controller (rev 09)
+	Subsystem: Intel Corporation Haswell-ULT HD Audio Controller
+00:1b.0 Audio device: Intel Corporation 8 Series HD Audio Controller (rev 04)
+	Subsystem: ASUSTeK Computer Inc. 8 Series HD Audio Controller
+
+
+https://askubuntu.com/questions/470839/how-can-i-choose-the-audio-output-device-using-the-terminal
+adrianna@asusUbuntu:/proc/asound/card1$ pactl list sinks short | awk -F '\t' '{print $1,$2,$5}'
+0 alsa_output.pci-0000_00_03.0.hdmi-stereo SUSPENDED
+1 alsa_output.pci-0000_00_1b.0.analog-stereo SUSPENDED
+3 bluez_sink.00_11_67_46_BD_29 RUNNING
+
+
+https://askubuntu.com/questions/985037/where-is-the-audio-device-in-ubuntu-16-04lts
+
+from
+$ ffmpeg -f alsa -i /dev/dsp out.wav
+$ ffmpeg -f alsa -i hw:2 -t 30 out.wav
+to (with Arecord -l)
+ffmpeg -f alsa -i plughw:CARD=C525,DEV=0 -t 30 out.wav
+	 for  		 $ arecord -l
+		**** List of CAPTURE Hardware Devices ****
+		card 2: C525 [HD Webcam C525], device 0: USB Audio [USB Audio]
+		  Subdevices: 1/1
+		  Subdevice #0: subdevice #0
+
+hw:CARD=C525,DEV=0 is better option than using hw:3,0
+plughw: is better option than hw:
+
+
+
+/************************
+/************************
+/************************
+$ /etc/init.d/icecast2 restart
+$ sudo darkice -c ~/Desktop/darkice.cfg
+WebBrowser: 
+http://192.168.0.166:8000/status.xsl   
+
+
+Reproducir
+http://192.168.0.166:8000/myMountPoint
+
+Abrira un reproductor desde la pag web
+http://192.168.0.166:8000/myMountPoint.m3u  

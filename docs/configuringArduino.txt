@@ -1,0 +1,12 @@
+adrianna@asusUbuntu:~$ sudo usermod -a -G dialout adrianna
+adrianna@asusUbuntu:~$ dmesg | grep tty
+[    0.000000] console [tty0] enabled
+[ 1294.565566] cdc_acm 1-3:1.0: ttyACM0: USB ACM device
+[ 6430.821834] cdc_acm 1-3:1.0: ttyACM0: USB ACM device
+[ 6802.538537] cdc_acm 1-3:1.0: ttyACM0: USB ACM device
+adrianna@asusUbuntu:~$ sudo chmod a+rw /dev/ttyACM0
+adrianna@asusUbuntu:~$ 
+
+
+
+then, in the ARDUINO IDE, select from Tools: Ports and the port where the mega is connected

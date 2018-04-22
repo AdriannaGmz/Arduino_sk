@@ -1,0 +1,87 @@
+https://www.youtube.com/watch?v=QumIhvYtRKQ
+
+sudo apt-get install arduino -y
+
+
+
+in Downloads
+git clone https://github.com/nanpy/nanpy
+git clone https://github.com/nanpy/nanpy-firmware
+
+to include the arduino  configuratiokn
+
+cd nanpy-firmware
+ls
+./configure.sh
+cd Nanpy 
+ls
+nano cfg.h   #in this file, activate in the I2C the USE_SERVO
+
+then, go back fo the Download folder and copy the nanpy-firmware folder to the sketchbook
+Downloads $ cp -avr nanpy-firmware/ ~/sketchbook/libraries
+
+in raspberry, it adds the folder to the arduino IDE . 
+once arduino IDE in raspberry is open, then:
+File: Sketchbook: libraries: nanpy-firmware:nanpy
+this loads the config file to the arduino. then upload it to the arduino
+
+arduino is then idle waiting for commands from raspberry
+
+
+now, lets install nanpy in raspberry
+
+Downloads / nanpy ls
+sudo python3 setup.py install 
+
+once installed, 
+in Desktop create a folder for placing this test file
+
+in raspberry, open a python 3 IDE test, create a new file, save it in the folder previouasly created
+
+
+
+
+
+from nanpy import (ArduinoApi, SerialManager)
+from time import sleep
+
+#number of pins
+ledPin = 7
+buttonPin = 8
+ledState = False
+buttonState = 0
+
+try:
+	myConnection = SerialManager()   #automatically finds whatever Arduino is connected to this raspberry 
+	# instance of the arduinoAPI option is as follows
+	a = ArduinoApi(connection = myConnection)
+except:   #this happens if fails
+	print("Failed to connect to Arduino")
+
+#then eerything is almost the same as in ArduinoIDE
+#Setup the pinmodes as if we were in the Arduino IDE
+a.pinMode(ledPin, a.OUTPUT)
+a.pinMode(buttonPin, a.INPUT)
+
+try: 
+	while True:
+		buttonState = a.digitalRead(buttonPin)
+		print("Our button state is {}".format(buttonState))
+		if buttonState:
+			if ledState:
+				a.digitalWrite(ledPin, a.LOW)
+				ledState = False
+				print("LED OFF")
+				sleep(1)
+			else:
+				a.digitalWrite(ledPin, a.HIGH)
+				ledState = True
+				print("LED ON")
+				sleep(1)
+except:
+	a.digitalWrite(ledPin, a.LOW)
+
+
+
+then  only run the code from raspberry
+python3 myCode.py

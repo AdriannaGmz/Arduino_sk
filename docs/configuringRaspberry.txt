@@ -1,0 +1,42 @@
+After writting complete new image, connect to monitor and usb mouse and keyboard, enable all options in raspberry pi Configuration (meaning SSH, VNC). Change of password is required for pi user
+old password: raspberry
+new password: raspberry0.
+
+
+#### Connecting with ethernet
+https://itsfoss.com/how-to-find-what-devices-are-connected-to-network-in-ubuntu/
+
+Plug with ethernet cable to linux (asus)
+
+in linux asus we should have nmap already installed.  and have the ethernet port as shared in ipv4
+to get ip address provided by ethernet port, first
+$ ifconfig
+
+which gives: 
+enp2s0    Link encap:Ethernet  HWaddr 10:c3:7b:1b:b5:a9  
+          inet addr:10.42.0.1  Bcast:10.42.0.255  Mask:255.255.255.0
+          inet6 addr: fe80::bb24:9dea:fd41:1c45/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:298 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:363 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:28251 (28.2 KB)  TX bytes:62590 (62.5 KB)
+
+Then, to scan all devices connectedto this network
+adrianna@asusUbuntu:~/Documents/PDP_AaltoExp$ sudo nmap -sn 10.42.0.0/24
+[sudo] password for adrianna: 
+
+Starting Nmap 7.01 ( https://nmap.org ) at 2018-01-06 17:51 EET
+Nmap scan report for 10.42.0.125
+Host is up (0.00036s latency).
+MAC Address: B8:27:EB:D4:AF:20 (Raspberry Pi Foundation)
+Nmap scan report for 10.42.0.1
+Host is up.
+Nmap done: 256 IP addresses (2 hosts up) scanned in 8.48 seconds
+
+
+
+then, open vnc Viewer to 10.42.0.125
+
+user: pi
+passw: raspberry0.
